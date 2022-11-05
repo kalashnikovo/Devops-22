@@ -166,11 +166,11 @@ Push - позволяет определить когда, куда и каку�
     D:\vagrant\ubuntu-20.04>
 
 - Зайти внутрь ВМ, убедиться, что Docker установлен с помощью команды
-   
+  
 
     vagrant@server1:~$ sudo -i
     root@server1:~# docker ps
     CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
     root@server1:~# docker -v
-    Docker version 20.10.10, build b485636
+    Docker version 21.10.11, build b485636
     root@server1:~#
