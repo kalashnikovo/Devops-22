@@ -1,0 +1,75 @@
+# Задание 1. Создать Deployment и обеспечить доступ к репликам приложения из другого Pod
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multitool
+  labels:
+    role: test
+spec:
+  containers:
+    - name: multitool
+      image: wbitt/network-multitool
+      ports:
+        - name: web
+          containerPort: 1180
+          protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: two-pods
+  labels:
+    app: multiple-container
+spec:
+  replicas: 2 # Изенить для увеличения кол-во реплик pod's
+  selector:
+    matchLabels:
+      app: multiple-container
+  template:
+    metadata:
+      labels:
+        app: multiple-container
+    spec:
+      containers:
+
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+      - name: network-multitool
+        image: wbitt/network-multitool
+        env:
+        - name: HTTP_PORT
+          value: "1180"
+        - name: HTTPS_PORT
+          value: "11443"
+        ports:
+        - containerPort: 1180
+          name: http-port
+        - containerPort: 11443
+          name: https-port
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: multiple-container
+spec:
+
+  ports:
+  - name: nginx
+    port: 80
+    protocol: TCP
+  - name: network-multitool
+    port: 1180
+    protocol: TCP
+  - name: network-multitool-https
+    port: 11443
+    protocol: TCP
+
+  selector:
+    app: multiple-container
+
+
+

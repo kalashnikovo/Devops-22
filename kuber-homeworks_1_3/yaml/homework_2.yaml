@@ -1,0 +1,52 @@
+# Задание 2. Создать Deployment и обеспечить старт основного контейнера при выполнении условий
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: two-pods-2hw
+  labels:
+    app: multiple-container
+spec:
+  replicas: 1 # Изенить для увеличения кол-во реплик pod's
+  selector:
+    matchLabels:
+      app: multiple-container-2hw
+  template:
+    metadata:
+      labels:
+        app: multiple-container-2hw
+    spec:
+      containers:
+
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+      initContainers:
+
+      - name: busybox
+        image: busybox
+        command: ['sh', '-c', 'until nslookup multiple-container; do echo waiting for multiple-container; sleep 2; done;']
+        env:
+        - name: HTTP_PORT
+          value: "8080"
+        ports:
+        - containerPort: 8080
+          name: http-port
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multiple-container
+spec:
+
+  ports:
+  - name: nginx
+    port: 80
+    protocol: TCP
+
+  selector:
+    app: multiple-container-2hw
