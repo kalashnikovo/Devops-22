@@ -27,7 +27,7 @@ spec:
 
       - name: busybox
         image: busybox
-        command: ['sh', '-c', 'until nslookup multiple-container; do echo waiting for multiple-container; sleep 2; done;']
+        command: ['sh', '-c', 'until nslookup multiple-container.default.svc.cluster.local; do echo waiting for multiple-container.default.svc.cluster.local; sleep 30; done;']
         env:
         - name: HTTP_PORT
           value: "8080"
@@ -36,17 +36,3 @@ spec:
           name: http-port
 
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: multiple-container
-spec:
-
-  ports:
-  - name: nginx
-    port: 80
-    protocol: TCP
-
-  selector:
-    app: multiple-container-2hw
