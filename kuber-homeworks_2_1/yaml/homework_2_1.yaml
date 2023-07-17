@@ -1,0 +1,78 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox-multitool 
+  labels:
+    app: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+
+      - name: busybox
+        image: busybox
+        command: ['sh', '-c', 'while true; do echo Success is $(date)! >> /cache/success.txt; sleep 5; done']
+        volumeMounts:
+        - name: my-vol
+          mountPath: /cache
+      - name: multitool
+        image: wbitt/network-multitool
+        volumeMounts:
+        - name: my-vol
+          mountPath: /static
+        env:
+        - name: HTTP_PORT
+          value: "80"
+        - name: HTTPS_PORT
+          value: "443"
+        ports:
+        - containerPort: 80
+          name: http-port
+        - containerPort: 443
+          name: https-port
+      volumes:
+      - name: my-vol
+        emptyDir: {} 
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: multitool-daemonset
+  labels:
+    app: main2
+spec:
+  selector:
+    matchLabels:
+      app: main2
+  template:
+    metadata:
+      labels:
+        app: main2
+    spec:
+      containers:
+      - name: network-multitool
+        image: wbitt/network-multitool
+        volumeMounts:
+        - name: vol-noda
+          mountPath: /output
+        env:
+        - name: HTTP_PORT
+          value: "80"
+        - name: HTTPS_PORT
+          value: "443"
+        ports:
+        - containerPort: 80
+          name: http-port
+        - containerPort: 443
+          name: https-port
+      volumes:
+      - name: vol-noda
+        hostPath:
+          path: /var/log
