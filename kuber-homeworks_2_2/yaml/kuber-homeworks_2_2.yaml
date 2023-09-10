@@ -1,0 +1,115 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox-multitool
+  namespace: default 
+  labels:
+    app: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command: ['sh', '-c', 'while true; do echo Success is $(date)! >> /dir1/success.txt; sleep 5; done']
+        volumeMounts:
+        - name: my-volume
+          mountPath: /dir1
+
+      - name: multitool
+        image: wbitt/network-multitool
+        volumeMounts:
+        - name: my-volume
+          mountPath: /dir2
+
+
+        env:
+        - name: HTTP_PORT
+          value: "80"
+        - name: HTTPS_PORT
+          value: "443"
+        ports:
+        - containerPort: 80
+          name: http-port
+        - containerPort: 443
+          name: https-port
+
+
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: pvc
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: ""
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+  persistentVolumeReclaimPolicy: Delete
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multitool-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: multitool
+  template:
+    metadata:
+      labels:
+        app: multitool
+    spec:
+      containers:
+        - name: multitool
+          image: praqma/network-multitool:alpine-extra
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /nfs_test
+              name: volume-nfs
+      volumes:
+        - name: volume-nfs
+          persistentVolumeClaim:
+            claimName: my-nfs-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-nfs-pvc
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+  requests:
+      storage: 1Gi
+---
