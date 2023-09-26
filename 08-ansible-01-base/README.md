@@ -39,4 +39,7 @@
 ---
 
 ### Решение
-[Ответы](https://github.com/kalashnikovo/Devops-22/08-ansible-01-base/playbook/hw.txt "ДЗ") 
+[Ответы](https://github.com/kalashnikovo/Devops-22/08-ansible-01-base/playbook/ "ДЗ")
+
+ 
+
